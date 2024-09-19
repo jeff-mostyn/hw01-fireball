@@ -32,6 +32,14 @@ float hash3to1 (vec3 point);
 vec3 hash3to3 (vec3 point);
 float WorleyNoise (vec3 point);
 vec3 GetWorleyLocus (vec3 point);
+float PerlinNoise (vec3 point, float frequency, float amplitude);
+float FBM (vec3 point);
+
+
+// ------------ Function Implementation -----------
+float map(float value, float min1, float max1, float min2, float max2) {
+  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+}
 
 float hash3to1(vec3 point) {
     return fract(sin(
@@ -103,6 +111,51 @@ vec3 GetWorleyLocus (vec3 point) {
     return hash3to3(point);
 }
 
+float PerlinNoise (vec3 point, float frequency, float amplitude) {
+    const float baseFrequencyMultiplier = 2.0;
+
+    point *= frequency;
+    point *= baseFrequencyMultiplier;
+
+    vec3 flooredPoint = floor(point);
+    vec3 pointFract = fract(point);
+
+    // pass corners of a cube into the random hash function
+    float front_bottom_left =   hash3to1(flooredPoint);
+    float front_bottom_right =  hash3to1(flooredPoint + vec3(1.0, 0.0, 0.0));
+    float back_bottom_left =    hash3to1(flooredPoint + vec3(0.0, 0.0, 1.0));
+    float back_bottom_right =   hash3to1(flooredPoint + vec3(1.0, 0.0, 1.0));
+
+    float front_top_left =      hash3to1(flooredPoint + vec3(0.0, 1.0, 0.0));
+    float front_top_right =     hash3to1(flooredPoint + vec3(1.0, 1.0, 0.0));
+    float back_top_left =       hash3to1(flooredPoint + vec3(0.0, 1.0, 1.0));
+    float back_top_right =      hash3to1(flooredPoint + vec3(1.0, 1.0, 1.0));
+
+    // vec3 u = pointFract * pointFract * (3.0 - (2.0 * pointFract));
+
+    // based on fract value, interpolate between the eight corners
+    float mix_bottom_left = mix(front_bottom_left, back_bottom_left, pointFract.z);
+    float mix_bottom_right = mix(front_bottom_right, back_bottom_right, pointFract.z);
+    float mix_top_left = mix(front_top_left, back_top_left, pointFract.z);
+    float mix_top_right = mix(front_top_right, back_top_right, pointFract.z);
+
+    float mix_bottom = mix(mix_bottom_left, mix_bottom_right, pointFract.x);
+    float mix_top = mix(mix_top_left, mix_top_right, pointFract.x);
+
+    float mix_volume = mix(mix_bottom, mix_top, pointFract.y);
+
+    return mix_volume * amplitude;
+}
+
+float FBM (vec3 point) {
+    return PerlinNoise(point, 1.0, 1.0) 
+        + PerlinNoise(point, 2.0, 0.5)
+        + PerlinNoise(point, 4.0, 0.25)
+        + PerlinNoise(point, 8.0, 0.125)
+        + PerlinNoise(point, 16.0, 0.0625);
+}
+
+
 // -------------- Main ---------------
 void main()
 {
@@ -120,12 +173,31 @@ void main()
                                                             //to simulate ambient lighting. This ensures that faces that are not
                                                             //lit by our point light are not completely black.
 
+        vec3 outerColor = vec3(216.0, 68.0, 4.0);
+        vec3 innerColor_Bottom = vec3(255.0, 218.0, 41.0);
+        vec3 innerColor_Top = vec3(235.0, 64.0, 4.0);
 
+        vec3 blendedInnerColor = mix(
+            innerColor_Bottom,
+            innerColor_Top,
+            map(
+                fs_Pos.y,
+                -1.0, 1.0, 0.0, 1.0
+            )
+        );
 
+        vec3 lerpColor = mix(
+            blendedInnerColor, 
+            outerColor, 
+            map(
+                length(vec3(fs_Pos.x, fs_Pos.y, fs_Pos.z)),
+                0.85, 1.15, 0.0, 1.0 
+            )
+        );
 
         // Compute final shaded color
         out_Col = vec4(
-            (diffuseColor.rgb * lightIntensity) / 255.0,
+            (lerpColor.rgb /* FBM(fs_Pos.xyz)/* (lightIntensity)*/) / 255.0,
             diffuseColor.a
         );
 }
