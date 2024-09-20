@@ -111,51 +111,6 @@ vec3 GetWorleyLocus (vec3 point) {
     return hash3to3(point);
 }
 
-float PerlinNoise (vec3 point, float frequency, float amplitude) {
-    const float baseFrequencyMultiplier = 2.0;
-
-    point *= frequency;
-    point *= baseFrequencyMultiplier;
-
-    vec3 flooredPoint = floor(point);
-    vec3 pointFract = fract(point);
-
-    // pass corners of a cube into the random hash function
-    float front_bottom_left =   hash3to1(flooredPoint);
-    float front_bottom_right =  hash3to1(flooredPoint + vec3(1.0, 0.0, 0.0));
-    float back_bottom_left =    hash3to1(flooredPoint + vec3(0.0, 0.0, 1.0));
-    float back_bottom_right =   hash3to1(flooredPoint + vec3(1.0, 0.0, 1.0));
-
-    float front_top_left =      hash3to1(flooredPoint + vec3(0.0, 1.0, 0.0));
-    float front_top_right =     hash3to1(flooredPoint + vec3(1.0, 1.0, 0.0));
-    float back_top_left =       hash3to1(flooredPoint + vec3(0.0, 1.0, 1.0));
-    float back_top_right =      hash3to1(flooredPoint + vec3(1.0, 1.0, 1.0));
-
-    // vec3 u = pointFract * pointFract * (3.0 - (2.0 * pointFract));
-
-    // based on fract value, interpolate between the eight corners
-    float mix_bottom_left = mix(front_bottom_left, back_bottom_left, pointFract.z);
-    float mix_bottom_right = mix(front_bottom_right, back_bottom_right, pointFract.z);
-    float mix_top_left = mix(front_top_left, back_top_left, pointFract.z);
-    float mix_top_right = mix(front_top_right, back_top_right, pointFract.z);
-
-    float mix_bottom = mix(mix_bottom_left, mix_bottom_right, pointFract.x);
-    float mix_top = mix(mix_top_left, mix_top_right, pointFract.x);
-
-    float mix_volume = mix(mix_bottom, mix_top, pointFract.y);
-
-    return mix_volume * amplitude;
-}
-
-float FBM (vec3 point) {
-    return PerlinNoise(point, 1.0, 1.0) 
-        + PerlinNoise(point, 2.0, 0.5)
-        + PerlinNoise(point, 4.0, 0.25)
-        + PerlinNoise(point, 8.0, 0.125)
-        + PerlinNoise(point, 16.0, 0.0625);
-}
-
-
 // -------------- Main ---------------
 void main()
 {

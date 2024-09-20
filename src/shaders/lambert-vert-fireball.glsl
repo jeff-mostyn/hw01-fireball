@@ -37,12 +37,20 @@ out vec4 fs_Pos;
 const vec4 lightPos = vec4(5, 5, 3, 1); //The position of our virtual light, which is used to compute the shading of
                                         //the geometry in the fragment shader.
 
+// ---------- Constants --------------
 const float LARGE_FLICKER_MAGNITUDE = 0.5;
 const float SMALL_FLICKER_MAGNITUDE = 0.35;
+
+// -------- Function Defs ------------
 
 float hash3to1 (vec3 point);
 float PerlinNoise (vec3 point, float frequency, float amplitude);
 float FBM (vec3 point);
+
+// ------------ Function Implementation -----------
+float map(float value, float min1, float max1, float min2, float max2) {
+  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+}
 
 float bias (float b, float t) {
     return pow(t, log(b) / log(0.5));
@@ -147,6 +155,25 @@ void main()
 
     // offset large displacement
     vertexPosition += vec3(largeFlickerDisplacement(vertexPosition, u_Time), 0.0, 0.0);
+
+    // vertical displacement moving from right
+    if (vertexPosition.y > -0.35) {
+        vertexPosition += 
+            mix(
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, PerlinNoise(vertexPosition + vec3(u_Time, 0.0, 0.0), 5.0, 1.0) * SMALL_FLICKER_MAGNITUDE, 0.0),
+                map(vertexPosition.x, -1.0, 1.0, 0.0, 1.0)
+            );
+    }
+
+    // vertical displacement moving from left
+    if (vertexPosition.y > -0.35) {
+        vertexPosition += mix(
+            vec3(0.0, PerlinNoise(vertexPosition + vec3(-u_Time, 0.0, 0.0), 5.0, 1.0) * SMALL_FLICKER_MAGNITUDE, 0.0),
+            vec3(0.0, 0.0, 0.0),
+            map(vertexPosition.x, -1.0, 1.0, 0.0, 1.0)
+        );
+    }
 
 
     fs_Col = vs_Col;                            // Pass the vertex colors to the fragment shader for interpolation
