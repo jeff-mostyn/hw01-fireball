@@ -157,7 +157,7 @@ void main()
     vertexPosition += vec3(largeFlickerDisplacement(vertexPosition, u_Time), 0.0, 0.0);
 
     // vertical displacement moving from right
-    if (vertexPosition.y > -0.3) {
+    if (vertexPosition.y > -0.35) {
         vertexPosition += 
             mix(
                 vec3(0.0, 0.0, 0.0),
