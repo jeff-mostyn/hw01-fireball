@@ -1,5 +1,5 @@
 
-name: Build and Deploy Pt 2 Electric Boogaloo
+name: Build and Deploy
 on:
   push:
     branches:
