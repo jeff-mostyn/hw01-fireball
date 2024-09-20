@@ -38,8 +38,10 @@ const vec4 lightPos = vec4(5, 5, 3, 1); //The position of our virtual light, whi
                                         //the geometry in the fragment shader.
 
 // ---------- Constants --------------
-const float LARGE_FLICKER_MAGNITUDE = 0.5;
-const float SMALL_FLICKER_MAGNITUDE = 0.35;
+const float LARGE_FLICKER_MAGNITUDE = 0.6;
+const float SMALL_FLICKER_MAGNITUDE = 0.4;
+const float PEAK_AMPLITUDE = 1.15;
+const float PEAK_FREQUENCY = 5.0;
 
 // -------- Function Defs ------------
 
@@ -75,10 +77,10 @@ float largeFlickerDisplacement (vec3 position, float time) {
 
     return 
         ( // the first sine is large steady waver, the others are "noise"/irregularly offset smaller flickers
-            sin(((position.y - time) * 1.6)) 
-            + max(0.0, (sin(position.y - (time * 3.0)) - 0.75) * 1.2) 
+            sin(((position.y - (time * 1.25)) * 1.6)) 
+            + max(0.0, (sin(position.y - (time * 3.0)) - 0.75) * 1.5) 
             + max(0.0, sin(position.y - (time * 4.0) + 1.5) - 0.75) 
-            + max(0.0, (sin(position.y - (time * 3.0) + 2.25) - 0.75) * 1.5)
+            + max(0.0, (sin(position.y - (time * 3.0) + 2.25) - 0.75) * 1.9)
             + max(0.0, (sin(position.y - (time * 4.0) + 2.8) - 0.75))
         )
         * LARGE_FLICKER_MAGNITUDE 
@@ -143,37 +145,77 @@ void main()
     vec3 vertexPosition = vs_Pos.xyz;
     vec3 shrinkDirection = vec3(-vs_Pos.x, 0, -vs_Pos.z);
 
-    // offset based on FBM noise
-    vertexPosition += (
-        -shrinkDirection 
-        * FBM(vertexPosition + vec3(0.0, -u_Time * 2.5, 0.0)) 
-        * SMALL_FLICKER_MAGNITUDE 
-        * mix(1.0, 0.0, (vertexPosition.y + 1.0) * .5));
-
     // create the fireball silhouette
     vertexPosition += shrinkDirection * fireballSilhouetteDisplacement(vertexPosition);
 
     // offset large displacement
     vertexPosition += vec3(largeFlickerDisplacement(vertexPosition, u_Time), 0.0, 0.0);
 
-    // vertical displacement moving from right
-    if (vertexPosition.y > -0.3) {
-        vertexPosition += 
-            mix(
-                vec3(0.0, 0.0, 0.0),
-                vec3(0.0, PerlinNoise(vertexPosition + vec3(u_Time, 0.0, 0.0), 5.0, 1.0) * SMALL_FLICKER_MAGNITUDE, 0.0),
-                map(vertexPosition.x, -1.0, 1.0, 0.0, 1.0)
-            );
+    // apply perlin noise to create moving peaks
+    if (vertexPosition.y > -0.35) {
+        // vertical displacement moving from right
+        vec3 leftwardMotionDisplacement = mix(
+            vec3(
+                0.0, 
+                PerlinNoise(vertexPosition + vec3(u_Time, 0.0, 0.0), PEAK_FREQUENCY, PEAK_AMPLITUDE), 
+                0.0
+            ),
+            vec3(0.0, 0.0, 0.0),
+            map(vertexPosition.x, -0.5, 1.0, 0.0, 1.0)
+        );
+
+        // vertical displacement moving from left
+        vec3 rightwardMotionDisplacement = mix(
+            vec3(0.0, 0.0, 0.0),
+            vec3(
+                0.0, 
+                PerlinNoise(vertexPosition + vec3(-u_Time, 0.0, 0.0), PEAK_FREQUENCY, PEAK_AMPLITUDE), 
+                0.0
+            ),
+            map(vertexPosition.x, -1.0, 0.5, 0.0, 1.0)
+        );
+
+        // vertical displacement moving from front
+        vec3 backwardMotionDisplacement = mix(
+            vec3(
+                0.0,
+                PerlinNoise(vertexPosition + vec3(0.0, 0.0, u_Time), PEAK_FREQUENCY, PEAK_AMPLITUDE), 
+                0.0
+            ),
+            vec3(0.0, 0.0, 0.0),
+            map(vertexPosition.z, -0.5, 1.0, 0.0, 1.0)
+        );
+
+        // vertical displacement moving from back
+        vec3 forwardMotionDisplacement = mix(
+            vec3(0.0, 0.0, 0.0),
+            vec3(
+                0.0, 
+                PerlinNoise(vertexPosition + vec3(0.0, 0.0, -u_Time), 4.0, PEAK_AMPLITUDE), 
+                0.0
+            ),
+            map(vertexPosition.z, -1.0, 0.5, 0.0, 1.0)
+        );
+
+        vec3 netVerticalDisplacement = (mix(
+            rightwardMotionDisplacement, 
+            leftwardMotionDisplacement, 
+            map(vertexPosition.x, -1.0, 1.0, 0.0, 1.0)
+        ) + mix(
+            forwardMotionDisplacement, 
+            backwardMotionDisplacement, 
+            map(vertexPosition.z, -1.0, 1.0, 0.0, 1.0)
+        )) / 2.0;
+
+        vertexPosition += netVerticalDisplacement;
     }
 
-    // vertical displacement moving from left
-    if (vertexPosition.y > -0.35) {
-        vertexPosition += mix(
-            vec3(0.0, PerlinNoise(vertexPosition + vec3(-u_Time, 0.0, 0.0), 5.0, 1.0) * SMALL_FLICKER_MAGNITUDE, 0.0),
-            vec3(0.0, 0.0, 0.0),
-            map(vertexPosition.x, -1.0, 1.0, 0.0, 1.0)
-        );
-    }
+    // offset based on FBM noise
+    vertexPosition += (
+        -shrinkDirection 
+        * FBM(vertexPosition + vec3(0.0, -u_Time * 2.5, 0.0)) 
+        * SMALL_FLICKER_MAGNITUDE 
+        * mix(1.0, 0.0, (vertexPosition.y + 1.0) * .5));
 
 
     fs_Col = vs_Col;                            // Pass the vertex colors to the fragment shader for interpolation
