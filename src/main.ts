@@ -14,7 +14,10 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 const controls = {
   tesselations: 5,
   'Load Scene': loadScene, // A function pointer, essentially
-  color: [255.0, 78.0, 0.0, 255.0]
+  // color: [255.0, 78.0, 0.0, 255.0],
+  CoreColor: [255.0, 218.0, 41.0, 255.0],
+  CoolColor1: [216.0, 68.0, 4.0, 255.0],
+  CoolColor2: [235.0, 64.0, 4.0, 255.0],
 };
 
 let icosphere: Icosphere;
@@ -45,7 +48,10 @@ function main() {
   gui.add(controls, 'tesselations', 0, 8).step(1);
   gui.add(controls, 'Load Scene');
 
-  gui.addColor(controls, 'color');
+  // gui.addColor(controls, 'color');
+  gui.addColor(controls, 'CoreColor');
+  gui.addColor(controls, 'CoolColor1');
+  gui.addColor(controls, 'CoolColor2');
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -91,12 +97,11 @@ function main() {
     lambert_hw01.setTime(thisFrame);
 
     // set base color
-    lambert_hw01.setGeometryColor([
-      controls.color[0],
-      controls.color[1],
-      controls.color[2],
-      controls.color[3]
-    ])
+    lambert_hw01.setGeometryColor(
+      [controls.CoreColor[0], controls.CoreColor[1], controls.CoreColor[2], controls.CoreColor[3]],
+      [controls.CoolColor1[0], controls.CoolColor1[1], controls.CoolColor1[2], controls.CoolColor1[3]],
+      [controls.CoolColor2[0], controls.CoolColor2[1], controls.CoolColor2[2], controls.CoolColor2[3]],
+    )
 
     if(controls.tesselations != prevTesselations)
     {

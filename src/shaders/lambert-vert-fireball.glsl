@@ -218,7 +218,7 @@ void main()
         * mix(1.0, 0.0, (vertexPosition.y + 1.0) * .5));
 
 
-    fs_Col = vs_Col;                            // Pass the vertex colors to the fragment shader for interpolation
+    // fs_Col = vs_Col;                            // Pass the vertex colors to the fragment shader for interpolation
     fs_Pos = vec4(vertexPosition, vs_Pos.w);                            // Pass the vertex position to fragment shader
 
 
