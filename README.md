@@ -8,6 +8,10 @@ Starting with an icosphere, I used a compination of sinusoid functions, noise fu
 
 ![Flame Silhouette](./images/fireball_layer1.png)
 
+# Semi-Realistic Flicker
+
+![Fireball Flickering](./images/fireball_layer2.png)
+
 
 ## Submission
 
