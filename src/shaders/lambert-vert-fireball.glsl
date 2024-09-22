@@ -39,7 +39,7 @@ const vec4 lightPos = vec4(5, 5, 3, 1); //The position of our virtual light, whi
 
 // ---------- Constants --------------
 const float LARGE_FLICKER_MAGNITUDE = 0.6;
-const float SMALL_FLICKER_MAGNITUDE = 0.4;
+const float SMALL_FLICKER_MAGNITUDE = 0.5;
 const float PEAK_AMPLITUDE = 1.15;
 const float PEAK_FREQUENCY = 5.0;
 

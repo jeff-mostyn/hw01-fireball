@@ -34,6 +34,8 @@ const float maxLocusDist = 1.73;
 float map(float value, float min1, float max1, float min2, float max2);
 float hash3to1 (vec3 point);
 vec3 hash3to3 (vec3 point);
+float bias (float b, float t);
+float gain (float g, float t);
 
 // ------------ Function Implementation -----------
 float map(float value, float min1, float max1, float min2, float max2) {
@@ -68,6 +70,18 @@ vec3 hash3to3(vec3 point3D) {
     ) * 200419.35);
 }
 
+float bias (float b, float t) {
+    return pow(t, log(b) / log(0.5));
+}
+float gain (float g, float t) {
+    if (t < 0.5) {
+        return bias(1.0 - g, 2.0 * t) / 2.0;
+    }
+    else {
+        return 1.0 - (bias(1.0 - g, (2.0 - 2.0 * t)) / 2.0);
+    }
+}
+
 // -------------- Main ---------------
 void main()
 {
@@ -94,10 +108,10 @@ void main()
 
     vec3 lerpColor = mix(
         blendedInnerColor, 
-        u_CoolColor1.xyz, 
+        u_CoolColor1.rgb, 
         map(
             length(vec3(fs_Pos.x, fs_Pos.y, fs_Pos.z)),
-            0.85, 1.15, 0.0, 1.0 
+            0.95, 1.15, 0.0, 1.0 
         )
     );
 

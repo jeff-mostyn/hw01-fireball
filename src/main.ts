@@ -1,4 +1,4 @@
-import {vec3} from 'gl-matrix';
+import {vec3, vec4} from 'gl-matrix';
 // const Stats = require('stats-js');
 import * as DAT from 'dat.gui';
 import Icosphere from './geometry/Icosphere';
@@ -14,6 +14,7 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 const controls = {
   tesselations: 5,
   'Load Scene': loadScene, // A function pointer, essentially
+  'Reset Fireball': reset, // A function pointer, essentially
   // color: [255.0, 78.0, 0.0, 255.0],
   CoreColor: [255.0, 218.0, 41.0, 255.0],
   CoolColor1: [216.0, 68.0, 4.0, 255.0],
@@ -25,6 +26,11 @@ let square: Square;
 let cube: Cube;
 let prevTesselations: number = 5;
 
+// save default colors
+const defaultCoreColor: number[] = [controls.CoreColor[0], controls.CoreColor[1], controls.CoreColor[2], controls.CoreColor[3]];
+const defaultCoolColor1: number[] = [controls.CoolColor1[0], controls.CoolColor1[1], controls.CoolColor1[2], controls.CoolColor1[3]];
+const defaultCoolColor2: number[] = [controls.CoolColor2[0], controls.CoolColor2[1], controls.CoolColor2[2], controls.CoolColor2[3]];
+
 function loadScene() {
   icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, controls.tesselations);
   icosphere.create();
@@ -32,6 +38,12 @@ function loadScene() {
   square.create();
   cube = new Cube(vec3.fromValues(0, 0, 0));
   cube.create();
+}
+
+function reset() {
+  controls.CoreColor = defaultCoreColor;
+  controls.CoolColor1 = defaultCoolColor1;
+  controls.CoolColor2 = defaultCoolColor2;
 }
 
 function main() {
@@ -47,6 +59,7 @@ function main() {
   const gui = new DAT.GUI();
   gui.add(controls, 'tesselations', 0, 8).step(1);
   gui.add(controls, 'Load Scene');
+  gui.add(controls, 'Reset Fireball');
 
   // gui.addColor(controls, 'color');
   gui.addColor(controls, 'CoreColor');
