@@ -63,9 +63,6 @@ float fireballSilhouetteDisplacement (vec3 position) {
 
     float t_height = (position.y + 1.0) / 2.0;
 
-    // lerp
-    // shrinkAmount = ((1.0 - t_height) * 0.0) + (t_height * 1.0);
-
     // bias
     shrinkAmount = 1.0 * bias(0.5, pow(t_height, 1.4));
 
@@ -79,9 +76,9 @@ float largeFlickerDisplacement (vec3 position, float time) {
         ( // the first sine is large steady waver, the others are "noise"/irregularly offset smaller flickers
             sin(((position.y - (time * 1.25)) * 1.6)) 
             + max(0.0, (sin(position.y - (time * 3.0)) - 0.75) * 1.5) 
-            + max(0.0, sin(position.y - (time * 4.0) + 1.5) - 0.75) 
-            + max(0.0, (sin(position.y - (time * 3.0) + 2.25) - 0.75) * 1.9)
-            + max(0.0, (sin(position.y - (time * 4.0) + 2.8) - 0.75))
+            + max(0.0, (sin(position.y - (time * 4.0) + 1.5) - 0.75) * 1.2)
+            + max(0.0, (sin(position.y - (time * 3.0) + 2.25) - 0.75) * 2.0)
+            + max(0.0, (sin(position.y - (time * 4.0) + 2.8) - 0.75) * 1.2)
         )
         * LARGE_FLICKER_MAGNITUDE 
         * bias(0.3, t_height);
@@ -147,7 +144,7 @@ void main()
 
     // create the fireball silhouette
     vertexPosition += shrinkDirection * fireballSilhouetteDisplacement(vertexPosition);
-
+    
     // offset large displacement
     vertexPosition += vec3(largeFlickerDisplacement(vertexPosition, u_Time), 0.0, 0.0);
 

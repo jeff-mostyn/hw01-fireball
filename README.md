@@ -16,6 +16,17 @@ Starting with an icosphere, I used a compination of sinusoid functions, noise fu
 
 ![Fireball Edge Distortion](./images/fireball_layer3.gif)
 
+# Height Distortion
+
+![Fireball Height Distortion](./images/fireball_layer4.gif)
+
+# Custom OBJ Import
+
+You can use the file browser to import a custom obj file that will have the fireball shaders applied to it. If the button to do so does not show up on the screen, you may need to tab through the page until focus reaches it.
+
+![Fireball Custom](./images/fireball_custom.png)
+
+
 
 ## Submission
 
