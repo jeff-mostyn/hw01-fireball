@@ -12,6 +12,10 @@ Starting with an icosphere, I used a compination of sinusoid functions, noise fu
 
 ![Fireball Flickering](./images/fireball_layer2.png)
 
+# FBM Distortion
+
+![Fireball Edge Distortion](./images/fireball_layer3.gif)
+
 
 ## Submission
 
