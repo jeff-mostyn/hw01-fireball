@@ -28,6 +28,10 @@ Using 4 instances of Perlin Noise, one coming from each of the left, right, fron
 
 ![Fireball Height Distortion](./images/fireball_layer4.gif)
 
+# Procedural Color
+
+There is interpolation between 3 colors, editable in the browser application. Core Color is the color of the fireball that is closest to its center at (0, 0, 0), which is interpolated with Cool Color 2 based on vertical height, so the top of the flame is that indicated by Cool Color 2. Cool Color 1 is interpolated with the result of the interpolation of the other two, based on distance from the vertical axis.
+
 # Custom OBJ Import
 
 You can use the file browser to import a custom .obj file that will have the fireball shaders applied to it. If the button to do so does not show up on the screen, you may need to tab through the page until focus reaches it. You will have the proper quality if all vertices of the .obj file lie within the [-1, 1] space in each axis
