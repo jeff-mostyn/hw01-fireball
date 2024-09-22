@@ -8,6 +8,7 @@ import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
 import {setGL} from './globals';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
+import CustomMesh from './geometry/CustomMesh';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
@@ -24,6 +25,7 @@ const controls = {
 let icosphere: Icosphere;
 let square: Square;
 let cube: Cube;
+let customMesh: CustomMesh | undefined;
 let prevTesselations: number = 5;
 
 // save default colors
@@ -45,6 +47,23 @@ function reset() {
   controls.CoolColor1 = defaultCoolColor1;
   controls.CoolColor2 = defaultCoolColor2;
 }
+
+const fileInput = document.getElementById('fileinput') as HTMLInputElement;
+
+fileInput.addEventListener('change', () => {
+   const file = fileInput.files[0];
+   if (file) {
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        const fileContent = fileReader.result as string;
+        const rows = fileContent.split('\n');
+
+        customMesh = new CustomMesh(vec3.fromValues(0,0,0), rows);
+        customMesh.create();
+      };
+      fileReader.readAsText(file);
+   }
+});
 
 function main() {
   // Initial display for framerate
@@ -110,7 +129,7 @@ function main() {
     lambert_hw01.setTime(thisFrame);
 
     // set base color
-    lambert_hw01.setGeometryColor(
+    lambert_hw01.setCustomColor(
       [controls.CoreColor[0], controls.CoreColor[1], controls.CoreColor[2], controls.CoreColor[3]],
       [controls.CoolColor1[0], controls.CoolColor1[1], controls.CoolColor1[2], controls.CoolColor1[3]],
       [controls.CoolColor2[0], controls.CoolColor2[1], controls.CoolColor2[2], controls.CoolColor2[3]],
@@ -122,12 +141,17 @@ function main() {
       icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, prevTesselations);
       icosphere.create();
     }
-    renderer.render(camera, lambert_hw01, [
-      icosphere,
-      // square,
-      // cube
-    ]);
-    // stats.end();
+    
+    if (customMesh != undefined) {
+      renderer.render(camera, lambert_hw01, [
+        customMesh
+      ])
+    }
+    else {
+      renderer.render(camera, lambert_hw01, [
+        icosphere,
+      ]);
+    }
 
     // Tell the browser to call `tick` again whenever it renders a new frame
     requestAnimationFrame(tick);

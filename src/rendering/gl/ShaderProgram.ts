@@ -93,7 +93,14 @@ class ShaderProgram {
     }
   }
 
-  setGeometryColor(coreColor: vec4, coolColor1: vec4, coolColor2: vec4) {
+  setGeometryColor(color: vec4) {
+    this.use();
+    if (this.unifColor !== -1) {
+      gl.uniform4fv(this.unifColor, color);
+    }
+  };
+
+  setCustomColor(coreColor: vec4, coolColor1: vec4, coolColor2: vec4) {
     this.use();
     if (this.unifCoreColor !== -1) {
       gl.uniform4fv(this.unifCoreColor, coreColor);
